@@ -1,0 +1,19 @@
+3.13.172.45
+172.31.28.190
+
+ec2-3-13-172-45.us-east-2.compute.amazonaws.com
+ip-172-31-28-190.us-east-2.compute.internal
+
+ssh -i "antrixsec.pem" ubuntu@ec2-3-13-172-45.us-east-2.compute.amazonaws.com
+
+ssh -i "antrixsec.pem" ubuntu@3.13.172.45
+
+scp  -i "antrixsec.pem" -rp ubuntu@3.13.172.45:/etc/nginx/conf.d/ ~/bkp/nginx_antrixtek/
+
+scp  -i "antrixsec.pem" -rp ~/spaces/razzle/antrixtek ubuntu@3.13.172.45:~/spaces/antrixtek 
+
+scp  -i "antrixsec.pem" -rp ~/spaces/razzle/antrixtek/info ubuntu@3.13.172.45:~/spaces/antrixtek 
+scp  -i "antrixsec.pem" -rp ~/spaces/razzle/antrixtek/src ubuntu@3.13.172.45:~/spaces/antrixtek 
+scp  -i "antrixsec.pem" -rp ~/spaces/razzle/antrixtek/public ubuntu@3.13.172.45:~/spaces/antrixtek 
+scp  -i "antrixsec.pem" -rp  ubuntu@3.13.172.45:~/etc/nginx/nginx.conf ~/spaces/bkp/ 
+

@@ -1,0 +1,40 @@
+
+https://promo.linode.com/learnlinuxtv
+
+
+https://promo.linode.com/wolfgang
+##################################################################################
+
+Region: Linodes/ubuntu-ca-central
+[ssh]
+
+ssh root@172.105.29.136
+
+ssh -t sanchil@lish-toronto1.linode.com ubuntu-ca-central
+
+Public DNS IPv4 :  172.105.29.136 
+Private DNS IPv4 : 192.168.133.144
+
+SLAAC: 2600:3c04::f03c:92ff:fe8e:e9e3 
+Link Local: fe80::f03c:92ff:fe8e:e9e3 
+
+Public DNS IPv4: 172.105.0.5 
+            172.105.3.5
+            172.105.4.5
+            172.105.5.5
+            172.105.6.5
+            172.105.7.5
+            172.105.8.5
+            172.105.9.5
+            172.105.10.5
+            172.105.11.5
+
+
+Public DNS IPv6:    2600:3C04::5
+                    2600:3C04::6
+                    2600:3C04::7
+                    2600:3C04::8
+                    2600:3C04::9
+                    2600:3C04::b
+                    2600:3C04::c
+

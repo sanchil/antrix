@@ -1,0 +1,17 @@
+# create a db
+curl -X PUT http://admin:admin@webapp.org/db/antrixdb
+
+# delete a db
+
+curl -X DELETE http://admin:admin@127.0.0.1:5984/antrixtekdb
+
+# get all docs
+
+curl -X GET http://admin:admin@webapp.org/db/antrixdb/_all_docs
+
+
+# add document
+
+curl -X PUT http://admin:admin@webapp.org/db/antrixdb/<id> -d '{"name":"hello","value":"World"}'
+
+

@@ -1,0 +1,26 @@
+Redis:
+
+The redis server is used to act as a store for express sessions. The razzle server 
+can also run with out this by disabling the following two lines in server.js.
+
+const SessionStore = redisstore(session);
+const redisClient = redis.createClient();
+
+This is only if application is not using express sessions. If it is using express sessions
+then express sessions must configure and alternate session store to use. If express sessions 
+are also not used then comment out the following use() in server.js
+
+   .use(session({
+     store: new SessionStore({client:redisClient}),
+     secret: 'agt1',
+     resave: false,
+     saveUninitialized: true
+   })) 
+
+along with express session imports;
+
+########################################################################
+
+install the redisjson module. although it may be unecessary.
+
+######################################################################

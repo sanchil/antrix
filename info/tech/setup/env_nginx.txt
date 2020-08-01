@@ -1,0 +1,446 @@
+nginx:
+
+build nginx with redis client modules. urls as below
+
+https://serversforhackers.com/c/compiling-third-party-modules-into-nginx
+https://jee-appy.blogspot.com/2016/05/add-module-to-nginx.html
+
+
+####################################################
+#simple straght forward way to install nginx
+
+sudo add-apt-repository -y ppa:nginx/stable
+sudo apt update
+sudo apt install -y nginx
+
+or
+
+#add the lines below to /etc/apt/sources.list.d/nginx.list
+
+deb https://nginx.org/packages/ubuntu/ bionic nginx
+deb-src https://nginx.org/packages/ubuntu/ bionic nginx
+
+sudo apt-get update
+sudo apt-get install nginx
+
+f a W: GPG error: https://nginx.org/packages/ubuntu xenial Release: The following 
+signatures couldn't be verified because the public key is not available: NO_PUBKEY 
+$key is encountered during the NGINX repository update, execute the following:
+
+## Replace $key with the corresponding $key from your GPG error.
+sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys $key
+sudo apt-get update
+sudo apt-get install nginx
+
+############################
+
+# prechecks for debian build tools
+
+sudo apt-get install build-essential autoconf automake \
+autotools-dev dh-make debhelper devscripts fakeroot \
+xutils lintian pbuilder
+
+#install nginx with modules
+
+- Get the sources/dependencies used to
+- Add our modules to the ppa:nginx/stable package
+- Rebuild the packages
+- Re-install Nginx
+
+Steps:
+- download the desired module say an upstream redis2 client into a folder 
+for eg:
+/opt/nginx_modules//opt/nginx_modules/redis2-nginx-module-0.1
+
+sudo add-apt-repository -y ppa:nginx/stable
+sudo apt-get update
+
+edit file file /etc/apt/sources.list.d/nginx-stable-bionic.list
+remove the # commenting out the src line
+
+deb-src http://ppa.launchpad.net/nginx/stable/ubuntu bionic main
+
+sudo apt update
+
+# Install package creation tools
+sudo apt install -y dpkg-dev
+
+sudo mkdir /opt/rebuildnginx
+cd /opt/rebuildnginx
+
+# Get Nginx (ppa:nginx/stable) source files
+sudo apt source nginx
+
+# Install the build dependencies
+sudo apt build-dep nginx
+
+# edit the rules file
+/opt/rebuildnginx/nginx-<version>/debian/rules
+
+# in rules file in the following config.status.nginx:
+# add the modules.  
+config.status.nginx: config.env.nginx
+          cd $(BUILDDIR_nginx) && \
+          CFLAGS="" ./configure \
+                      --prefix=/etc/nginx --sbin-path=/usr/sbin/nginx \
+                      --modules-path=/usr/lib/nginx/modules --conf-path=/etc/nginx/nginx.conf \
+                      --error-log-pat    h=/var/log/nginx/error.log \
+                      --http-log-path=/var/log/nginx/access.log \
+                      --pid-path=/var/run/nginx.pid --lock-path=/var/run/nginx.lock \
+                      --add-module=/opt/nginx_modules/redis2-nginx-module-0.15 \
+                      --add-module=/opt/nginx_modules/ngx_devel_kit-master \
+                      --add-module=/opt/nginx_modules/set-misc-nginx-module-0.32 \
+                      --http-client-body-temp-path=/var/cache/nginx/client_temp \
+                      --http-proxy-temp-path=/var/cache/nginx/proxy_temp 
+                      --http-fastcgi-temp-path=    /var/cache/nginx/fastcgi_temp \
+                      --http-uwsgi-temp-path=/var/cache/nginx/uwsgi_temp 
+                      --http-scgi-temp-path=/var/cache/nginx/scgi_temp --user=nginx \
+                      --group=nginx --with-c    ompat --with-file-aio --with-threads \
+                      --with-http_addition_module --with-http_auth_request_module \
+                      --with-http_dav_module --with-http_flv_module --with-http_gunzip_module \
+                      --with-http_gzip_static_module --with-http_mp4_module \
+                      --with-http_random_index_module --with-http_realip_module \
+                      --with-http_secure_link_module --with-http_slice_module \
+                      --with-http_ssl_module --with-http_stub_status_module \
+                      --with-http_sub_module --with-http_v2_module --with-mail \
+                      --with-mail_ssl_module --with-stream --with-stream_realip_module \
+                      --with-stream_ssl_module --with-stream_ssl_preread_module \
+                      --with-cc-opt="$(CFLAGS)" --with-ld-opt="$(LDFLAGS)"
+          touch $@
+  
+  config.status.nginx_debug: config.env.nginx_debug
+          cd $(BUILDDIR_nginx_debug) && \
+          CFLAGS="" ./configure \
+            --prefix=/etc/nginx --sbin-path=/usr/sbin/nginx \
+            --modules-path=/usr/lib/nginx/modules --conf-path=/etc/nginx/nginx.conf \
+            --error-log-pat    h=/var/log/nginx/error.log \
+            --http-log-path=/var/log/nginx/access.log \
+            --pid-path=/var/run/nginx.pid \
+            --lock-path=/var/run/nginx.lock \
+            --http-client-body-temp-path=/var/cache/nginx/client_temp \
+            --add-module=/opt/nginx_modules/redis2-nginx-module-0.15 \
+            --add-module=/opt/nginx_modules/ngx_devel_kit-master \
+            --add-module=/opt/nginx_modules/set-misc-nginx-module-0.32 \
+            --http-proxy-temp-path=/var/cache/nginx/proxy_temp \
+            --http-fastcgi-temp-path=/var/cache/nginx/fastcgi_temp \
+            --http-uwsgi-temp-path=/var/cache/nginx/uwsgi_temp \
+            --http-scgi-temp-path=/var/cache/nginx/scgi_temp \
+            --user=nginx --group=nginx --with-compat --with-file-aio \
+            --with-threads --with-http_addition_module --with-http_auth_request_module \
+            --with-http_dav_module --with-http_flv_module --with-http_gunzip_module \
+            --with-http_gzip_static_module --with-http_mp4_module \
+            --with-http_random_index_module --with-http_realip_module \
+            --with-http_secure_link_module --with-http_slice_module \
+            --with-http_ssl_module --with-http_stub_status_module \
+            --with-http_sub_module --with-http_v2_module --with-mail --with-mail_ssl_module \
+            --with-stream --with-str    eam_realip_module --with-stream_ssl_module \
+            --with-stream_ssl_preread_module --with-cc-opt="$(CFLAGS)" \
+            --with-ld-opt="$(LDFLAGS)" --with-debug
+
+in the sections above add  --add-dynamic-module=/opt/nginx_modules/redis2-nginx-module-0.15
+or
+ --add-module=/opt/nginx_modules/redis2-nginx-module-0.15
+ --add-module=/opt/nginx_modules/ngx_devel_kit-master
+ --add-module=/opt/nginx_modules/set-misc-nginx-module-0.32
+
+ cd /opt/rebuildnginx/nginx-<version>
+ sudo dpkg-buildpackage -b -uc -us
+ 
+ or 
+ 
+you can build the package with following cmd to skip sign error
+dpkg-buildpackage -b --no-sign
+
+or
+
+dpkg-buildpackage -rfakeroot
+
+ you will see nginx*.deb packages created in /opt/rebuildnginx. install these using the 
+ sudo dpkg -i nginx*.deb command for eg:
+sudo dpkg -i nginx_1.16.1-1~bionic_amd64.deb
+
+# check the installed version with following command.
+
+nginx -V 2>&1 | tr -- -  '\n' | grep module
+
+############ if building nginx from src using standard build commands without debian support then use the following.
+############## especially needed for building docker images ####################################
+
+sudo ./configure \
+                        --prefix=/etc/nginx \ 
+                        --sbin-path=/usr/sbin/nginx \
+                        --modules-path=/usr/lib/nginx/modules \ 
+                        --conf-path=/etc/nginx/nginx.conf \
+                        --error-log-path=/var/log/nginx/error.log \
+                        --http-log-path=/var/log/nginx/access.log \
+                        --pid-path=/var/run/nginx.pid \
+                        --lock-path=/var/run/nginx.lock \
+                        --with-compat \
+                        --add-dynamic-module=/home/azure/dev/buildnginx/modules/redis2-nginx-module-0.15 \
+                        --add-dynamic-module=/home/azure/dev/buildnginx/modules/ngx_devel_kit-master \
+                        --add-dynamic-module=/home/azure/dev/buildnginx/modules/set-misc-nginx-module-0.32 \
+                        --http-client-body-temp-path=/var/cache/nginx/client_temp \
+                        --http-proxy-temp-path=/var/cache/nginx/proxy_temp \
+                        --http-fastcgi-temp-path=/var/cache/nginx/fastcgi_temp \
+                        --http-uwsgi-temp-path=/var/cache/nginx/uwsgi_temp \
+                        --http-scgi-temp-path=/var/cache/nginx/scgi_temp \
+                        --user=nginx \
+                        --group=nginx \                        
+                        --with-file-aio \
+                        --with-threads \
+                        --with-http_addition_module \ 
+                        --with-http_auth_request_module \
+                        --with-http_dav_module \
+                        --with-http_flv_module \
+                        --with-http_gunzip_module \
+                        --with-http_gzip_static_module \
+                        --with-http_mp4_module \
+                        --with-http_random_index_module \
+                        --with-http_realip_module \
+                        --with-http_secure_link_module \ 
+                        --with-http_slice_module \
+                        --with-http_ssl_module \
+                        --with-http_stub_status_module \
+                        --with-http_sub_module \
+                        --with-http_v2_module \
+                        --with-mail \
+                        --with-mail_ssl_module \ 
+                        --with-stream \
+                        --with-stream_realip_module \
+                        --with-stream_ssl_module \
+                        --with-stream_ssl_preread_module 
+
+                        --with-cc-opt="$(CFLAGS)" \
+                        --with-ld-opt="$(LDFLAGS)"
+
+
+./configure \
+                        --prefix=/etc/nginx \ 
+                        --sbin-path=/usr/sbin/nginx \
+                        --modules-path=/usr/lib/nginx/modules \ 
+                        --conf-path=/etc/nginx/nginx.conf \
+                        --error-log-path=/var/log/nginx/error.log \
+                        --http-log-path=/var/log/nginx/access.log \
+                        --pid-path=/var/run/nginx.pid \
+                        --lock-path=/var/run/nginx.lock \
+                        --with-pcre=/home/azure/dev/buildnginx/modules/pcre-8.44 \
+                        --with-zlib=/home/azure/dev/buildnginx/modules/zlib-1.2.11 \
+                        --with-http_ssl_module \
+                        --with-stream \
+                        --with-mail=dynamic \
+                        --with-compat \
+                        --add-dynamic-module=/home/azure/dev/buildnginx/modules/redis2-nginx-module-0.15 \
+                        --add-dynamic-module=/home/azure/dev/buildnginx/modules/ngx_devel_kit-master \
+                        --add-dynamic-module=/home/azure/dev/buildnginx/modules/set-misc-nginx-module-0.32
+
+
+./configure --prefix=/etc/nginx --sbin-path=/usr/sbin/nginx --modules-path=/usr/lib/nginx/modules --conf-path=/etc/nginx/nginx.conf --error-log-path=/var/log/nginx/error.log --http-log-path=/var/log/nginx/access.log --pid-path=/var/run/nginx.pid --lock-path=/var/run/nginx.lock --with-pcre=/home/azure/dev/buildnginx/modules/pcre-8.44 --with-zlib=/home/azure/dev/buildnginx/modules/zlib-1.2.11 --with-http_ssl_module --with-stream --with-mail=dynamic --add-dynamic-module=/home/azure/dev/buildnginx/modules/redis2-nginx-module-0.15 --add-dynamic-module=/home/azure/dev/buildnginx/modules/ngx_devel_kit-master --add-dynamic-module=/home/azure/dev/buildnginx/modules/set-misc-nginx-module-0.32
+
+#######################################################################################################################################
+
+#build_install_nginx_from_source.txt
+
+# download the following software modules. most likely pcre, zlib and openssl may not be 
+# needed as it would already have been installed on the system. 
+# you may check this by running following commands. 
+# we are building this nginx with redis2 modules and configuring them to be loaded as dynamic modules
+
+
+# run following commands to test the existing versions of the compononents
+
+# for openssl
+openssl version
+# for pcre
+pcretest -C
+
+# download and pull the modules. these are the same essential steps needed to build a docker image of nginx
+
+wget https://ftp.pcre.org/pub/pcre/pcre-8.44.tar.gz
+wget http://zlib.net/zlib-1.2.11.tar.gz
+wget http://www.openssl.org/source/openssl-1.1.1d.tar.gz
+wget https://nginx.org/download/nginx-1.17.9.tar.gz
+mainline: wget https://nginx.org/download/nginx-1.19.1.tar.gz
+stable: wget https://nginx.org/download/nginx-1.18.0.tar.gz
+
+git clone https://github.com/vision5/ngx_devel_kit.git
+git clone https://github.com/openresty/set-misc-nginx-module.git
+git clone https://github.com/openresty/redis2-nginx-module.git
+
+# for openssl1.1.1g
+./config
+make
+sudo make install
+# check openssl version
+openssl version
+
+# you may receive an error following the install of openssl1.1.1g
+openssl: symbol lookup error: openssl: undefined symbol: EVP_mdc2, version OPENSSL_1_1_0
+# solution as listed in link below
+# https://github.com/openssl/openssl/issues/11227
+
+Task: Trying to build nginx 1.19.1 from source and trying to build and install openssl1.1.1g on top of existing version openssl1.1.1f
+Os: Linux Mint 20 and existing version openssl1.1.1f
+instructions for openssl build and install :
+./config
+make
+sudo make install
+
+Error seen on running "openssl version" command as below:
+
+openssl: symbol lookup error: openssl: undefined symbol: EVP_mdc2, version OPENSSL_1_1_0
+
+Resolution: add the following entry /usr/lib to /etc/ld.so.conf.d/libc.conf file and run command 'ldconfig'
+$ldconfig
+
+# post nginx sudo make install tasks
+
+
+
+$ sudo mkdir -p /etc/nginx/conf.d
+$ sudo mkdir -p /etc/nginx/ssl
+$ sudo mkdir -p /etc/nginx/modules
+$ sudo mkdir -p /var/cache/nginx
+# copy the conf files to conf.d folder
+
+$ sudo adduser --system --no-create-home --group nginx
+
+$ sudo ln -s /usr/lib/nginx/modules/* /etc/nginx/modules/
+
+# error when starting nginx service
+nginx: [emerg] getpwnam("nginx") failed
+# Resolution the user nginx does not exist. create new user nginx belonging to nginx group.
+
+$ sudo adduser --system --no-create-home --group nginx
+
+#ignore the following two as they create a default home directory
+#sudo groupadd nginx
+#sudo useradd –g nginx nginx
+
+
+# before you run configure make sure that the values for
+# --user ang --group matches with the one on the system
+# ensure that paths to all the dynamic modules are correct.
+# pls copy all the compiled dynamic modules to /usr/lib/nginx/modules 
+# and update the nginx.conf or appropriate server block with correct paths
+
+# latest updated ./configure command for nginx-1.19.1 (19jul2020)
+
+./configure --prefix=/etc/nginx --sbin-path=/usr/sbin/nginx --modules-path=/usr/lib/nginx/modules --conf-path=/etc/nginx/nginx.conf --error-log-path=/var/log/nginx/error.log --http-log-path=/var/log/nginx/access.log --pid-path=/var/run/nginx.pid --lock-path=/var/run/nginx.lock --with-compat --add-dynamic-module=/home/azure/dev/build/nginx/modules/redis2-nginx-module --add-dynamic-module=/home/azure/dev/build/nginx/modules/ngx_devel_kit --add-dynamic-module=/home/azure/dev/build/nginx/modules/set-misc-nginx-module --http-client-body-temp-path=/var/cache/nginx/client_temp --http-proxy-temp-path=/var/cache/nginx/proxy_temp --http-fastcgi-temp-path=/var/cache/nginx/fastcgi_temp --http-uwsgi-temp-path=/var/cache/nginx/uwsgi_temp --http-scgi-temp-path=/var/cache/nginx/scgi_temp --user=nginx --group=nginx --with-file-aio --with-threads --with-http_addition_module --with-http_auth_request_module --with-http_dav_module --with-http_flv_module --with-http_gunzip_module --with-http_gzip_static_module --with-http_mp4_module --with-http_random_index_module --with-http_realip_module --with-http_secure_link_module --with-http_slice_module --with-http_ssl_module --with-http_stub_status_module --with-http_sub_module --with-http_v2_module --with-mail --with-mail_ssl_module --with-stream --with-stream_realip_module --with-stream_ssl_module --with-stream_ssl_preread_module
+
+################## create a unit file for nginx service ######################################
+# create a nginx.service file under /lib/systemd/system and add the lines below
+
+#################################
+[Unit]
+Description=nginx Daemon
+
+[Service]
+Type=forking
+ExecStart=/usr/sbin/nginx
+PIDFile=/var/run/nginx.pid
+NonBlocking=true
+KillMode=process
+ExecStop=/usr/sbin/nginx -s stop
+ExecReload=/usr/sbin/nginx -s reload
+#Restart=on-failure
+#RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+#################################
+
+# once the nginx.service file is created run command
+sudo systemctl enable nginx
+sudo systemctl start nginx
+##########################################################################################################################
+
+################# settings in nginx conf file #####################
+
+upstream redisbackend {
+  #    server backend1.example.com weight=5;
+      server 127.0.0.1:6379       max_fails=3 fail_timeout=30s;
+   #   server unix:/tmp/backend3;
+  
+   #   server backup1.example.com  backup;
+  }
+
+
+# GET /get?key=some_key
+   location = /redis/get {
+     if ($request_method = 'OPTIONS') {
+                          add_header 'Access-Control-Allow-Origin' '$current_origin';
+                          add_header 'Access-Control-Allow-Credentials' 'true';
+                          #add_header 'Access-Control-Allow-Origin' '*';
+                          add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, DELETE, OPTIONS';
+                          #
+                          # Custom headers and headers various browsers *should* be OK with but aren't
+                          #
+                          add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization';
+                          #
+                          # Tell client that this pre-flight info is valid for 20 days
+                          #
+                          add_header 'Access-Control-Max-Age' 1728000;
+                          add_header 'Content-Type' 'text/plain; charset=utf-8';
+                          add_header 'Content-Length' 0;
+                          return 204;
+                          }
+  
+       set $REDISSERVER 'redisbackend';
+       set_unescape_uri $key $arg_key;  # this requires ngx_set_misc
+       redis2_query get $key;
+       redis2_pass $REDISSERVER;
+   }
+  
+   # GET /set?key=one&val=first%20value
+   location = /redis/set {
+       if ($request_method = 'OPTIONS') {
+                          add_header 'Access-Control-Allow-Origin' '$current_origin';
+                          add_header 'Access-Control-Allow-Credentials' 'true';
+                          #add_header 'Access-Control-Allow-Origin' '*';
+                          add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, DELETE, OPTIONS';
+                          #
+                          # Custom headers and headers various browsers *should* be OK with but aren't
+                          #
+                          add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization';
+                          #
+                          # Tell client that this pre-flight info is valid for 20 days
+                          #
+                          add_header 'Access-Control-Max-Age' 1728000;
+                          add_header 'Content-Type' 'text/plain; charset=utf-8';
+                          add_header 'Content-Length' 0;
+                          return 204;
+                          }
+
+          set $REDISSERVER 'redisbackend';
+          set_unescape_uri $key $arg_key;  # this requires ngx_set_misc
+          set_unescape_uri $val $arg_val;  # this requires ngx_set_misc
+          redis2_query set $key $val;
+          redis2_pass $REDISSERVER ;
+   }
+  
+   location = /redis/raw {
+
+          if ($request_method = 'OPTIONS') {
+                          add_header 'Access-Control-Allow-Origin' '$current_origin';
+                          add_header 'Access-Control-Allow-Credentials' 'true';
+                          #add_header 'Access-Control-Allow-Origin' '*';
+                          add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, DELETE, OPTIONS';
+                          #
+                          # Custom headers and headers various browsers *should* be OK with but aren't
+                          #
+                          add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization';
+                          #
+                          # Tell client that this pre-flight info is valid for 20 days
+                          #
+                          add_header 'Access-Control-Max-Age' 1728000;
+                          add_header 'Content-Type' 'text/plain; charset=utf-8';
+                          add_header 'Content-Length' 0;
+                          return 204;
+                          }
+
+          set $REDISSERVER 'redisbackend';
+          set_unescape_uri $query $query_string; # this requires the ngx_set_misc module
+          redis2_raw_query $query;
+          redis2_pass $REDISSERVER ;
+   }
+
