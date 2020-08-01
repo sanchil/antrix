@@ -1,0 +1,113 @@
+# download the following software modules. most likely pcre, zlib and openssl may not be 
+# needed as it would already have been installed on the system. 
+# you may check this by running following commands. 
+# we are building this nginx with redis2 modules and configuring them to be loaded as dynamic modules
+
+
+# run following commands to test the existing versions of the compononents
+
+# for openssl
+openssl version
+# for pcre
+pcretest -C
+
+# download and pull the modules. these are the same essential steps needed to build a docker image of nginx
+
+wget https://ftp.pcre.org/pub/pcre/pcre-8.44.tar.gz
+wget http://zlib.net/zlib-1.2.11.tar.gz
+wget http://www.openssl.org/source/openssl-1.1.1d.tar.gz
+wget https://nginx.org/download/nginx-1.17.9.tar.gz
+mainline: wget https://nginx.org/download/nginx-1.19.1.tar.gz
+stable: wget https://nginx.org/download/nginx-1.18.0.tar.gz
+
+git clone https://github.com/vision5/ngx_devel_kit.git
+git clone https://github.com/openresty/set-misc-nginx-module.git
+git clone https://github.com/openresty/redis2-nginx-module.git
+
+# for openssl1.1.1g
+./config
+make
+sudo make install
+# check openssl version
+openssl version
+
+# you may receive an error following the install of openssl1.1.1g
+openssl: symbol lookup error: openssl: undefined symbol: EVP_mdc2, version OPENSSL_1_1_0
+# solution as listed in link below
+# https://github.com/openssl/openssl/issues/11227
+
+Task: Trying to build nginx 1.19.1 from source and trying to build and install openssl1.1.1g on top of existing version openssl1.1.1f
+Os: Linux Mint 20 and existing version openssl1.1.1f
+instructions for openssl build and install :
+./config
+make
+sudo make install
+
+Error seen on running "openssl version" command as below:
+
+openssl: symbol lookup error: openssl: undefined symbol: EVP_mdc2, version OPENSSL_1_1_0
+
+Resolution: add the following entry /usr/lib to /etc/ld.so.conf.d/libc.conf file and run command 'ldconfig'
+$ldconfig
+
+# post nginx sudo make install tasks
+
+
+
+$ sudo mkdir -p /etc/nginx/conf.d
+$ sudo mkdir -p /etc/nginx/ssl
+$ sudo mkdir -p /etc/nginx/modules
+$ sudo mkdir -p /var/cache/nginx
+# copy the conf files to conf.d folder
+
+$ sudo adduser --system --no-create-home --group nginx
+
+$ sudo ln -s /usr/lib/nginx/modules/* /etc/nginx/modules/
+
+# error when starting nginx service
+nginx: [emerg] getpwnam("nginx") failed
+# Resolution the user nginx does not exist. create new user nginx belonging to nginx group.
+
+$ sudo adduser --system --no-create-home --group nginx
+
+#ignore the following two as they create a default home directory
+#sudo groupadd nginx
+#sudo useradd –g nginx nginx
+
+
+# before you run configure make sure that the values for
+# --user ang --group matches with the one on the system
+# ensure that paths to all the dynamic modules are correct.
+# pls copy all the compiled dynamic modules to /usr/lib/nginx/modules 
+# and update the nginx.conf or appropriate server block with correct paths
+
+# latest updated ./configure command for nginx-1.19.1 (19jul2020)
+
+./configure --prefix=/etc/nginx --sbin-path=/usr/sbin/nginx --modules-path=/usr/lib/nginx/modules --conf-path=/etc/nginx/nginx.conf --error-log-path=/var/log/nginx/error.log --http-log-path=/var/log/nginx/access.log --pid-path=/var/run/nginx.pid --lock-path=/var/run/nginx.lock --with-compat --add-dynamic-module=/home/azure/dev/build/nginx/modules/redis2-nginx-module --add-dynamic-module=/home/azure/dev/build/nginx/modules/ngx_devel_kit --add-dynamic-module=/home/azure/dev/build/nginx/modules/set-misc-nginx-module --http-client-body-temp-path=/var/cache/nginx/client_temp --http-proxy-temp-path=/var/cache/nginx/proxy_temp --http-fastcgi-temp-path=/var/cache/nginx/fastcgi_temp --http-uwsgi-temp-path=/var/cache/nginx/uwsgi_temp --http-scgi-temp-path=/var/cache/nginx/scgi_temp --user=nginx --group=nginx --with-file-aio --with-threads --with-http_addition_module --with-http_auth_request_module --with-http_dav_module --with-http_flv_module --with-http_gunzip_module --with-http_gzip_static_module --with-http_mp4_module --with-http_random_index_module --with-http_realip_module --with-http_secure_link_module --with-http_slice_module --with-http_ssl_module --with-http_stub_status_module --with-http_sub_module --with-http_v2_module --with-mail --with-mail_ssl_module --with-stream --with-stream_realip_module --with-stream_ssl_module --with-stream_ssl_preread_module
+
+################## create a unit file for nginx service ######################################
+# create a nginx.service file under /lib/systemd/system and add the lines below
+
+#################################
+[Unit]
+Description=nginx Daemon
+
+[Service]
+Type=forking
+ExecStart=/usr/sbin/nginx
+PIDFile=/var/run/nginx.pid
+NonBlocking=true
+KillMode=process
+ExecStop=/usr/sbin/nginx -s stop
+ExecReload=/usr/sbin/nginx -s reload
+#Restart=on-failure
+#RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+#################################
+
+# once the nginx.service file is created run command
+sudo systemctl enable nginx
+sudo systemctl start nginx
+

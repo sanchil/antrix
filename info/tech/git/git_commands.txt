@@ -30,6 +30,8 @@ git commit -m "first commit"
 git remote add origin https://github.com/sanchil/antrix.git
 git push -u origin master
 
+git add *
+git commit -m "build_init"
 git remote add origin https://github.com/sanchil/antrix.git
 git push -u origin master
 
