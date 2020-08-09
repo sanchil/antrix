@@ -44,7 +44,8 @@ server
         <title>Welcome to AntrixTek; Home of Innovation and Technology</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js">
+        </script>
         <script>
               WebFont.load({
                       google: {

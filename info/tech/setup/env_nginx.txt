@@ -237,6 +237,7 @@ sudo ./configure \
 ./configure --prefix=/etc/nginx --sbin-path=/usr/sbin/nginx --modules-path=/usr/lib/nginx/modules --conf-path=/etc/nginx/nginx.conf --error-log-path=/var/log/nginx/error.log --http-log-path=/var/log/nginx/access.log --pid-path=/var/run/nginx.pid --lock-path=/var/run/nginx.lock --with-pcre=/home/azure/dev/buildnginx/modules/pcre-8.44 --with-zlib=/home/azure/dev/buildnginx/modules/zlib-1.2.11 --with-http_ssl_module --with-stream --with-mail=dynamic --add-dynamic-module=/home/azure/dev/buildnginx/modules/redis2-nginx-module-0.15 --add-dynamic-module=/home/azure/dev/buildnginx/modules/ngx_devel_kit-master --add-dynamic-module=/home/azure/dev/buildnginx/modules/set-misc-nginx-module-0.32
 
 #######################################################################################################################################
+# https://docs.nginx.com/nginx/admin-guide/installing-nginx/installing-nginx-open-source/
 
 #build_install_nginx_from_source.txt
 
@@ -246,6 +247,7 @@ sudo ./configure \
 # we are building this nginx with redis2 modules and configuring them to be loaded as dynamic modules
 
 
+##########################################
 # run following commands to test the existing versions of the compononents
 
 # for openssl
@@ -253,6 +255,7 @@ openssl version
 # for pcre
 pcretest -C
 
+##########################################
 # download and pull the modules. these are the same essential steps needed to build a docker image of nginx
 
 wget https://ftp.pcre.org/pub/pcre/pcre-8.44.tar.gz
@@ -266,13 +269,50 @@ git clone https://github.com/vision5/ngx_devel_kit.git
 git clone https://github.com/openresty/set-misc-nginx-module.git
 git clone https://github.com/openresty/redis2-nginx-module.git
 
-# for openssl1.1.1g
+##########################################
+#pcre
+$ wget https://ftp.pcre.org/pub/pcre/pcre-8.44.tar.gz
+$ tar -zxf pcre-8.44.tar.gz
+$ cd pcre-8.44
+$ ./configure
+$ make
+$ sudo make install
+
+# check pcre version
+pcretest -C
+
+##########################################
+#zlib
+$ wget http://zlib.net/zlib-1.2.11.tar.gz
+$ tar -zxf zlib-1.2.11.tar.gz
+$ cd zlib-1.2.11
+$ ./configure
+$ make
+$ sudo make install
+
+# check zlib version
+
+##########################################
+# openssl1.1.1g
+
+$ wget http://www.openssl.org/source/openssl-1.1.1g.tar.gz
+$ tar -zxf openssl-1.1.1g.tar.gz
+$ cd openssl-1.1.1g
+$ ./config --prefix=/usr/local/lib
+$ make
+$ sudo make install
+
+or
+
 ./config
 make
 sudo make install
+
 # check openssl version
 openssl version
 
+##########################################
+## for openssl installation errors and issues
 # you may receive an error following the install of openssl1.1.1g
 openssl: symbol lookup error: openssl: undefined symbol: EVP_mdc2, version OPENSSL_1_1_0
 # solution as listed in link below
@@ -291,6 +331,18 @@ openssl: symbol lookup error: openssl: undefined symbol: EVP_mdc2, version OPENS
 
 Resolution: add the following entry /usr/lib to /etc/ld.so.conf.d/libc.conf file and run command 'ldconfig'
 $ldconfig
+##########################################
+
+# nginx 1.19.0
+
+$ wget https://nginx.org/download/nginx-1.19.0.tar.gz
+$ tar zxf nginx-1.19.0.tar.gz
+$ cd nginx-1.19.0
+$ ./configure --prefix=/etc/nginx --sbin-path=/usr/sbin/nginx --modules-path=/usr/lib/nginx/modules --conf-path=/etc/nginx/nginx.conf --error-log-path=/var/log/nginx/error.log --http-log-path=/var/log/nginx/access.log --pid-path=/var/run/nginx.pid --lock-path=/var/run/nginx.lock --with-compat  --add-dynamic-module=/home/azure/dev/build/nginx/modules/ngx_devel_kit  --add-dynamic-module=/home/azure/dev/build/nginx/modules/set-misc-nginx-module --add-dynamic-module=/home/azure/dev/build/nginx/modules/redis2-nginx-module --http-client-body-temp-path=/var/cache/nginx/client_temp --http-proxy-temp-path=/var/cache/nginx/proxy_temp --http-fastcgi-temp-path=/var/cache/nginx/fastcgi_temp --http-uwsgi-temp-path=/var/cache/nginx/uwsgi_temp --http-scgi-temp-path=/var/cache/nginx/scgi_temp --user=nginx --group=nginx --with-file-aio --with-threads --with-http_addition_module --with-http_auth_request_module --with-http_dav_module --with-http_flv_module --with-http_gunzip_module --with-http_gzip_static_module --with-http_mp4_module --with-http_random_index_module --with-http_realip_module --with-http_secure_link_module --with-http_slice_module --with-http_ssl_module --with-http_stub_status_module --with-http_sub_module --with-http_v2_module --with-mail --with-mail_ssl_module --with-stream --with-stream_realip_module --with-stream_ssl_module --with-stream_ssl_preread_module
+$ make
+$ sudo make install
+
+##########################################
 
 # post nginx sudo make install tasks
 
@@ -327,6 +379,39 @@ $ sudo adduser --system --no-create-home --group nginx
 
 ./configure --prefix=/etc/nginx --sbin-path=/usr/sbin/nginx --modules-path=/usr/lib/nginx/modules --conf-path=/etc/nginx/nginx.conf --error-log-path=/var/log/nginx/error.log --http-log-path=/var/log/nginx/access.log --pid-path=/var/run/nginx.pid --lock-path=/var/run/nginx.lock --with-compat --add-dynamic-module=/home/azure/dev/build/nginx/modules/redis2-nginx-module --add-dynamic-module=/home/azure/dev/build/nginx/modules/ngx_devel_kit --add-dynamic-module=/home/azure/dev/build/nginx/modules/set-misc-nginx-module --http-client-body-temp-path=/var/cache/nginx/client_temp --http-proxy-temp-path=/var/cache/nginx/proxy_temp --http-fastcgi-temp-path=/var/cache/nginx/fastcgi_temp --http-uwsgi-temp-path=/var/cache/nginx/uwsgi_temp --http-scgi-temp-path=/var/cache/nginx/scgi_temp --user=nginx --group=nginx --with-file-aio --with-threads --with-http_addition_module --with-http_auth_request_module --with-http_dav_module --with-http_flv_module --with-http_gunzip_module --with-http_gzip_static_module --with-http_mp4_module --with-http_random_index_module --with-http_realip_module --with-http_secure_link_module --with-http_slice_module --with-http_ssl_module --with-http_stub_status_module --with-http_sub_module --with-http_v2_module --with-mail --with-mail_ssl_module --with-stream --with-stream_realip_module --with-stream_ssl_module --with-stream_ssl_preread_module
 
+# latest updated ./configure command for nginx-1.19.1 (07aug2020)
+
+## you need to install the following modules for support for certbot
+
+## with geo ip module and image filter module
+##  --with-http_geoip_module --with-http_image_filter_module --with-http_xslt_module
+## first install libraries that geoip and image filter are dependent on
+## first install gd libraries that image filter is dependent on
+## first install xml and xslt libraries that xslt filter is dependent on.
+
+
+$ sudo apt install -y libgd3 libgd-dev  libgeoip-dev 
+$ sudo apt-get install libxml2-dev libxslt-dev python-dev
+./configure --prefix=/etc/nginx --sbin-path=/usr/sbin/nginx --modules-path=/usr/lib/nginx/modules --conf-path=/etc/nginx/nginx.conf --error-log-path=/var/log/nginx/error.log --http-log-path=/var/log/nginx/access.log --pid-path=/var/run/nginx.pid --lock-path=/var/run/nginx.lock --with-compat  --add-dynamic-module=/home/azure/build/nginx/modules/ngx_devel_kit  --add-dynamic-module=/home/azure/build/nginx/modules/set-misc-nginx-module --add-dynamic-module=/home/azure/build/nginx/modules/redis2-nginx-module --http-client-body-temp-path=/var/cache/nginx/client_temp --http-proxy-temp-path=/var/cache/nginx/proxy_temp --http-fastcgi-temp-path=/var/cache/nginx/fastcgi_temp --http-uwsgi-temp-path=/var/cache/nginx/uwsgi_temp --http-scgi-temp-path=/var/cache/nginx/scgi_temp --user=nginx --group=nginx --with-file-aio --with-threads --with-http_addition_module --with-http_auth_request_module --with-http_dav_module --with-http_geoip_module --with-http_image_filter_module  --with-http_xslt_module --with-http_flv_module --with-http_gunzip_module --with-http_gzip_static_module --with-http_mp4_module --with-http_random_index_module --with-http_realip_module --with-http_secure_link_module --with-http_slice_module --with-http_ssl_module --with-http_stub_status_module --with-http_sub_module --with-http_v2_module --with-mail --with-mail_ssl_module --with-stream --with-stream_realip_module --with-stream_ssl_module --with-stream_ssl_preread_module
+## install certbot for nginx
+## https://certbot.eff.org/lets-encrypt/ubuntubionic-nginx
+
+sudo apt-get update
+sudo apt-get install software-properties-common
+sudo add-apt-repository universe
+sudo add-apt-repository ppa:certbot/certbot
+sudo apt-get update
+
+# run certbot to get your https certificates
+# follow standard instructions with yes after adding your email installed
+
+$ sudo certbot --nginx
+
+## restart the nginx server
+## http://h-gill.com does not work for some reason with route53. 
+# But https://h-gill.com works fine
+
+
 ################## create a unit file for nginx service ######################################
 # create a nginx.service file under /lib/systemd/system and add the lines below
 
@@ -353,6 +438,25 @@ WantedBy=multi-user.target
 sudo systemctl enable nginx
 sudo systemctl start nginx
 ##########################################################################################################################
+
+
+## notes to resolve some nginx headache issues.
+
+#certbot makes some modifications to nginx.conf file. it may be a good idea to not let certbot install its version of nginx.conf.
+# but letting certbot install its own version of nginx.conf will let you know what modules does it expect and that way you are 
+# better able to fine tune your ./configure command.
+# after install of certbot you may get error messages regarding module version incompatibility with nginx version.
+# just rebuild and reinstall nginx to make the errors go away. remove all references to modules-available and modules-enable folders in our nginx and the
+# stick the ones you need. The ./configure comand is taking care of the modules that cerbot needs
+# --with-http_geoip_module --with-http_image_filter_module --with-http_xslt_module and all its dependent libraries 
+# libgd3, libgd-dev, libgeoip-dev, libxml2-dev, libxslt-dev and python-dev
+
+# please use the local ip address of aws for proxy_pass and with http only not https and do not forget to add the trailing '/'. 
+# ie: proxy_pass http://172.31.17.103:3000/;
+# that will save a lot of headaches. for location directive do not add a trailing '/' to your path
+# i.e location /db {
+
+
 
 ################# settings in nginx conf file #####################
 
@@ -444,3 +548,188 @@ upstream redisbackend {
           redis2_pass $REDISSERVER ;
    }
 
+##### note the differences in conf for local and remote #############################
+# 07 aug 2020
+
+# for remote nginx.conf
+# comment out 
+#include /etc/nginx/modules-enabled/*.conf;
+#include /etc/nginx/sites-enabled/*;
+
+# add
+# add following lines
+
+load_module modules/ndk_http_module.so;
+load_module modules/ngx_http_set_misc_module.so;
+load_module modules/ngx_http_redis2_module.so;
+worker_rlimit_nofile 65535;
+
+# create a modules dir under /etc/nginx and create softlinks to all the modules in /usr/lib/nginx/modules 
+# folder in /etc/nginx/modules
+
+$ sudo ln -s /usr/lib/nginx/modules.* .
+
+
+# modify
+# modify user to nginx from wwww-data
+user nginx;
+
+# modify pid file to as below
+pid /var/run/nginx.pid;
+
+# modify value from 64 to 128
+server_names_hash_bucket_size 128;
+# turn gzip to on
+gzip on;
+
+
+#remove
+# remove following directories
+modules-available
+modules-enabled
+
+#### for remote ng.conf #######
+
+# the http://h-gill.com does not work with route53 for some reason. http://www.h-gill.com works.
+# with https turned on via certbot both the urls https://h-gill.com and https://www.h-gill.com work.
+
+#modify server_name to https://h-gill.com https://www.h-gill.com and remote ip address
+#for ie:
+server_name h-gill.com www.h-gill.com 3.23.179.255;
+
+# add map section to deal with http origin. for ie:
+
+map $http_origin $current_origin {
+	default https://h-gill.com;
+	https://www.h-gill.com https://www.h-gill.com;
+	https://3.23.179.255 https://3.23.179.255;
+}
+
+# proxy_pass directive must have the url of local internal ip address of aws ec2 instance. for ie
+proxy_pass http://172.31.17.103:3000/;
+# remember to add the trailing '/';
+
+# location directives must NOT have the trailing '/' unless it is the root which you want to redirect. for ie
+# to redirect urls which end in db. note no trailing '/'
+
+location /db { ... }
+
+# location directives for root urls, for ie as below
+
+location / { ... }
+
+####################### nginx.conf - local webappsvr ################################
+
+
+#####################################################################################
+
+####################### ng.conf - local webappsvr ###################################
+
+
+#####################################################################################
+
+####################### nginx.conf - remote h-gill.com ##############################
+
+load_module modules/ndk_http_module.so;
+load_module modules/ngx_http_set_misc_module.so;
+load_module modules/ngx_http_redis2_module.so;
+#load_module modules/ngx_http_geoip_module.so;
+#load_module modules/ngx_http_image_filter_module.so;
+#load_module modules/ngx_http_xslt_filter_module.so;
+#load_module modules/ngx_mail_module.so;
+#load_module modules/ngx_stream_module.so;
+
+user nginx;
+worker_processes auto;
+pid /var/run/nginx.pid;
+#include /etc/nginx/modules-enabled/*.conf;
+worker_rlimit_nofile 65535;
+
+events {
+	worker_connections 4096;
+	# multi_accept on;
+}
+
+http {
+
+	##
+	# Basic Settings
+	##
+
+	sendfile on;
+	tcp_nopush on;
+	tcp_nodelay on;
+	keepalive_timeout 65;
+	types_hash_max_size 2048;
+	# server_tokens off;
+
+	server_names_hash_bucket_size 128;
+	# server_names_hash_bucket_size 64;
+	# server_name_in_redirect off;
+
+	include /etc/nginx/mime.types;
+	default_type application/octet-stream;
+
+	##
+	# SSL Settings
+	##
+
+	ssl_protocols TLSv1 TLSv1.1 TLSv1.2; # Dropping SSLv3, ref: POODLE
+	ssl_prefer_server_ciphers on;
+
+	##
+	# Logging Settings
+	##
+
+	access_log /var/log/nginx/access.log;
+	error_log /var/log/nginx/error.log;
+
+	##
+	# Gzip Settings
+	##
+
+	gzip on;
+
+	# gzip_vary on;
+	# gzip_proxied any;
+	# gzip_comp_level 6;
+	# gzip_buffers 16 8k;
+	# gzip_http_version 1.1;
+	# gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
+
+	##
+	# Virtual Host Configs
+	##
+
+	include /etc/nginx/conf.d/*.conf;
+#	include /etc/nginx/sites-enabled/*;
+}
+
+
+#mail {
+#	# See sample authentication script at:
+#	# http://wiki.nginx.org/ImapAuthenticateWithApachePhpScript
+# 
+#	# auth_http localhost/auth.php;
+#	# pop3_capabilities "TOP" "USER";
+#	# imap_capabilities "IMAP4rev1" "UIDPLUS";
+# 
+#	server {
+#		listen     localhost:110;
+#		protocol   pop3;
+#		proxy      on;
+#	}
+# 
+#	server {
+#		listen     localhost:143;
+#		protocol   imap;
+#		proxy      on;
+#	}
+#}
+
+#####################################################################################
+
+####################### ng.conf - remote ng.conf ####################################
+
+
+#####################################################################################

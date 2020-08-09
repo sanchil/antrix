@@ -10,6 +10,10 @@ Region: Linodes/ubuntu-ca-central
 
 ssh root@172.105.29.136
 
+root: P@nguin3.14
+azure: penguin
+
+
 ssh -t sanchil@lish-toronto1.linode.com ubuntu-ca-central
 
 Public DNS IPv4 :  172.105.29.136 
