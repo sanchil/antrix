@@ -13,13 +13,16 @@ ssh root@172.105.29.136
 root: P@nguin3.14
 azure: penguin
 
+
 reverse dns lookup: li1984-136.members.linode.com
                     www.antrixtek.com
-                    
+
 ssh -t sanchil@lish-toronto1.linode.com ubuntu-ca-central
 
 Public DNS IPv4 :  172.105.29.136 
 Private DNS IPv4 : 192.168.133.144
+
+
 
 SLAAC: 2600:3c04::f03c:92ff:fe8e:e9e3 
 Link Local: fe80::f03c:92ff:fe8e:e9e3 
