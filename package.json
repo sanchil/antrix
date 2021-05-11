@@ -18,7 +18,7 @@
     "clsx": "^1.1.1",
     "express": "^4.17.1",
     "express-session": "^1.17.1",
-    "lodash": "^4.17.20",
+    "lodash": "^4.17.21",
     "pouchdb": "^7.2.2",
     "pouchdb-upsert": "^2.2.0",
     "razzle": "^3.1.7",
